@@ -1,0 +1,8 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-tournamentmanage-aafc5515-033b-47a5-8544-c4eafa421bcf",
+      "rules": "firestore.rules"
+    }
+  ]
+}

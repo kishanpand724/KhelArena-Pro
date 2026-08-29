@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KhelArena | Professional Free Fire Tournament Platform</title>
+    
+    <!-- SEO & Meta Tags -->
+    <meta name="description" content="Join KhelArena, India's premier online Free Fire tournament management system. Register for competitive matches, win cash prizes, and join the elite esports community." />
+    <meta name="keywords" content="Free Fire, Esports, Tournament, Gaming, Win Cash, KhelArena, Gaming Lobbies, Battleground" />
+    <meta name="author" content="KhelArena Esports Inc." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://khelarena.com/" />
+    <meta property="og:title" content="KhelArena | Professional Free Fire Tournament Platform" />
+    <meta property="og:description" content="Register, Play, and Win in professional Free Fire lobbies. India's most trusted esports platform." />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://khelarena.com/" />
+    <meta property="twitter:title" content="KhelArena | Professional Free Fire Tournament Platform" />
+    <meta property="twitter:description" content="Join elite Free Fire tournaments and win daily prizes." />
+    <meta property="twitter:image" content="/og-image.png" />
+    
+    <!-- PWA Primary Config -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="description" content="KhelArena Esports Battleground - Play, Win, and Earn in esports tournaments." />
+    
+    <!-- iOS / Safari Mobile Web App Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KhelArena" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png" />
+    
+    <!-- Android / General Mobile App capable -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((reg) => {
+              console.log('[KhelArena PWA] Service Worker registered successfully:', reg.scope);
+            })
+            .catch((err) => {
+              console.error('[KhelArena PWA] Service Worker registration failed:', err);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
+

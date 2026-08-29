@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account details including wallet and roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique user ID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoURL": { "type": "string", "description": "User profile picture URL" },
+        "role": { "type": "string", "enum": ["user", "super_admin"], "description": "Account authorization role" },
+        "walletBalance": { "type": "number", "description": "Simulated wallet balance in INR" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "walletBalance"]
+    },
+    "Transaction": {
+      "title": "Wallet Transaction",
+      "description": "A financial transaction for deposits, withdrawals, or entry fees",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "entry_fee", "prize_payout"] },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "reference": { "type": "string", "description": "Transaction reference number or remarks" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "type", "amount", "status", "createdAt"]
+    },
+    "Notification": {
+      "title": "User Notification",
+      "description": "A push notification or alert for a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "type": { "type": "string", "enum": ["room_details", "payment_verified", "announcement", "prize"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "message", "read", "type", "createdAt"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "Game tournament details managed by the super admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "gameName": { "type": "string" },
+        "entryFee": { "type": "number" },
+        "prizePool": { "type": "number" },
+        "maxPlayers": { "type": "number" },
+        "registeredPlayersCount": { "type": "number" },
+        "startDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["upcoming", "ongoing", "completed"] },
+        "bannerUrl": { "type": "string" },
+        "upiId": { "type": "string" },
+        "qrCodeUrl": { "type": "string" },
+        "roomID": { "type": "string" },
+        "roomPassword": { "type": "string" },
+        "winners": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "gameName", "entryFee", "prizePool", "maxPlayers", "registeredPlayersCount", "status", "createdAt", "updatedAt"]
+    },
+    "Registration": {
+      "title": "Tournament Registration",
+      "description": "A player's registration and payment details for a specific tournament",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Matching the user's UID to prevent double registrations" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "gameUsername": { "type": "string" },
+        "paymentStatus": { "type": "string", "enum": ["pending", "verified", "failed"] },
+        "transactionId": { "type": "string" },
+        "paymentScreenshotUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userEmail", "userName", "gameUsername", "paymentStatus", "createdAt", "updatedAt"]
+    },
+    "AppSettings": {
+      "title": "Application Settings",
+      "description": "Global application configuration, e.g. UPI details",
+      "type": "object",
+      "properties": {
+        "upiId": { "type": "string" },
+        "qrCodeUrl": { "type": "string" }
+      },
+      "required": ["upiId", "qrCodeUrl"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Saves individual user profile data"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Lists transactions made by a single user"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Stores user notifications and alerts"
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": "Tournament",
+      "description": "Lists all tournaments, managed by super admins"
+    },
+    "/tournaments/{tournamentId}/registrations/{registrationId}": {
+      "schema": "Registration",
+      "description": "Maintains registration lists for a tournament"
+    },
+    "/settings/global": {
+      "schema": "AppSettings",
+      "description": "Maintains global payment details like standard UPI ID and QR code"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "KhelArena Esports",
+  "description": "A role-based esports tournament management platform for players and admins to register, make payments, manage wallets, check leaderboards, and coordinate game rooms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "kishanpande724@gmail.com" ||
+        request.auth.token.email == "admin@tournament.local"
+      );
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if true; // Allow anyone to read profile by ID (e.g. for leaderboard/profiles)
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isOwner(userId) && (
+          (request.resource.data.role == "user" && request.resource.data.walletBalance == 0) ||
+          (request.resource.data.role == "super_admin" && request.auth.token.email == "kishanpande724@gmail.com")
+        );
+      allow update: if isSuperAdmin() || (
+        isOwner(userId) && 
+        request.resource.data.role == resource.data.role && 
+        request.resource.data.walletBalance == resource.data.walletBalance // Prevent cheating
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // --- Transactions Subcollection ---
+    match /users/{userId}/transactions/{transactionId} {
+      allow read: if isOwner(userId) || isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // --- Notifications Subcollection ---
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if isOwner(userId) || isSuperAdmin();
+      allow create: if isOwner(userId) || isSuperAdmin();
+      allow update: if isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isOwner(userId) || isSuperAdmin();
+    }
+
+    // --- Tournaments Collection ---
+    match /tournaments/{tournamentId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isSuperAdmin();
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredPlayersCount']) &&
+        request.resource.data.registeredPlayersCount == resource.data.registeredPlayersCount + 1
+      );
+    }
+
+    // --- Tournament Registrations Subcollection ---
+    match /tournaments/{tournamentId}/registrations/{registrationId} {
+      allow read: if isSignedIn() && (isOwner(registrationId) || isSuperAdmin());
+      allow create: if isSignedIn() && isOwner(registrationId) && (
+        request.resource.data.paymentStatus == "pending" ||
+        (request.resource.data.paymentStatus == "verified" && (
+          get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.entryFee == 0 ||
+          request.resource.data.transactionId == "WALLET_DEDUCTION"
+        ))
+      );
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // --- Global App Settings ---
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // --- Processed Deposits ---
+    match /processed_deposits/{paymentId} {
+      allow read: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // --- Admin Modifications Logs ---
+    match /updates/{updateId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // --- New Payment Collections ---
+    match /payments/{paymentId} {
+      allow get: if true;
+      allow list: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+    match /payment_logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+    match /wallet_transactions/{txId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+  }
+}
