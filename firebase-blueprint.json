@@ -97,9 +97,45 @@
         "qrCodeUrl": { "type": "string" }
       },
       "required": ["upiId", "qrCodeUrl"]
+    },
+    "SupportTicket": {
+      "title": "Support Ticket",
+      "description": "User support tickets and inquiries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "subject": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "resolved", "closed"] },
+        "messages": { "type": "array" }
+      },
+      "required": ["id", "userId", "subject", "status"]
+    },
+    "PromoCode": {
+      "title": "Promo Code",
+      "description": "Promotional discount codes for entry fees",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "discountType": { "type": "string", "enum": ["flat", "percentage"] },
+        "value": { "type": "number" },
+        "expiryDate": { "type": "string" }
+      },
+      "required": ["id", "code", "discountType", "value"]
     }
   },
   "firestore": {
+    "/support_tickets/{ticketId}": {
+      "schema": "SupportTicket",
+      "description": "Stores user support tickets and messages"
+    },
+    "/promo_codes/{promoId}": {
+      "schema": "PromoCode",
+      "description": "Stores tournament promotional coupon codes"
+    },
     "/users/{userId}": {
       "schema": "User",
       "description": "Saves individual user profile data"

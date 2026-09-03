@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { HelpCircle, Mail, MessageSquare, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Send, Loader2, Sparkles, Phone, MessageCircle, FileText, Shield, RotateCcw, ArrowLeft, ExternalLink, ChevronRight } from "lucide-react";
-import { collection, db, doc, setDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, handleFirestoreError, OperationType } from "../lib/firebase";
+import { collection, db, doc, setDoc, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, handleFirestoreError, OperationType } from "../lib/firebase";
 import { UserProfile, SupportTicket } from "../types";
 
 interface SupportCenterProps {
@@ -47,19 +47,29 @@ export default function SupportCenter({ user, setView }: SupportCenterProps) {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    if (!user?.uid) return;
+
     const q = query(
       collection(db, "support_tickets"),
-      orderBy("updatedAt", "desc")
+      where("userId", "==", user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list: SupportTicket[] = [];
       snapshot.forEach((docSnap) => {
-        const ticket = { id: docSnap.id, ...docSnap.data() } as SupportTicket;
-        if (ticket.userId === user.uid) {
-          list.push(ticket);
-        }
+        list.push({ id: docSnap.id, ...docSnap.data() } as SupportTicket);
       });
+
+      // Sort client-side by newest update
+      list.sort((a, b) => {
+        const parseTime = (t: any) => {
+          if (!t) return 0;
+          if (typeof t === "object" && typeof t.toMillis === "function") return t.toMillis();
+          return new Date(t).getTime() || 0;
+        };
+        return parseTime(b.updatedAt || b.createdAt) - parseTime(a.updatedAt || a.createdAt);
+      });
+
       setTickets(list);
 
       if (selectedTicket) {
@@ -69,7 +79,7 @@ export default function SupportCenter({ user, setView }: SupportCenterProps) {
         }
       }
     }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "SupportCenter:onSnapshot");
+      handleFirestoreError(error, OperationType.LIST, "support_tickets");
     });
 
     return () => unsubscribe();

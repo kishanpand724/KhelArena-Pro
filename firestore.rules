@@ -25,7 +25,7 @@ service cloud.firestore {
       allow get: if true; // Allow anyone to read profile by ID (e.g. for leaderboard/profiles)
       allow list: if isSignedIn();
       allow create: if isSignedIn() && isOwner(userId) && (
-          (request.resource.data.role == "user" && request.resource.data.walletBalance == 0) ||
+          request.resource.data.role == "user" ||
           (request.resource.data.role == "super_admin" && request.auth.token.email == "kishanpande724@gmail.com")
         );
       allow update: if isSuperAdmin() || (
@@ -39,7 +39,8 @@ service cloud.firestore {
     // --- Transactions Subcollection ---
     match /users/{userId}/transactions/{transactionId} {
       allow read: if isOwner(userId) || isSuperAdmin();
-      allow write: if isSuperAdmin();
+      allow create: if isOwner(userId) || isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
     }
 
     // --- Notifications Subcollection ---
@@ -105,6 +106,24 @@ service cloud.firestore {
     match /wallet_transactions/{txId} {
       allow get: if true;
       allow list: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // --- Support Tickets Collection ---
+    match /support_tickets/{ticketId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // --- Promo Codes Collection ---
+    match /promo_codes/{promoId} {
+      allow read: if isSignedIn();
       allow write: if isSuperAdmin();
     }
   }
