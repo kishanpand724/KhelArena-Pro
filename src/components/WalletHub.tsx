@@ -544,15 +544,65 @@ export default function WalletHub({ user, appSettings }: WalletHubProps) {
 
       {/* Tab Content: Deposit */}
       {activeTab === "deposit" && (
-        <div className="max-w-4xl mx-auto">
-          {/* Step 1: Enter Deposit Amount */}
-          <div className="glass-panel rounded-3xl p-6 sm:p-8 border-slate-800/80 max-w-lg mx-auto text-slate-300">
-            <h3 className="text-base font-black text-white mb-2">Deposit Cash to Arena Wallet</h3>
-            <p className="text-xs text-slate-400 mb-6 leading-relaxed font-medium">
-              Add cash instantly via Razorpay to enter paid match lobbies and secure spots. Wallet balance is credited automatically.
-            </p>
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Manual UPI Deposit Panel */}
+          <div className="glass-panel rounded-3xl p-6 sm:p-8 border-slate-800/80 text-slate-300">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-black text-white">Manual UPI Deposit</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Pay via GPay, PhonePe, Paytm, or BHIM UPI & submit details for admin approval.</p>
+              </div>
+              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase">
+                Direct UPI
+              </span>
+            </div>
 
-            <form onSubmit={handleStartDepositPayment} className="space-y-5">
+            {/* UPI Details & QR Code Section */}
+            <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 mb-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-2 text-center sm:text-left flex-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Official Admin UPI ID</span>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+                    <span className="font-mono font-black text-sm text-indigo-400 select-all">{appSettings.upiId || "Not Configured"}</span>
+                    <button
+                      type="button"
+                      onClick={copyUpiToClipboard}
+                      className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition cursor-pointer"
+                      title="Copy UPI ID"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {copiedUpi && (
+                    <span className="text-[10px] text-emerald-400 font-bold block animate-pulse">
+                      ✓ UPI ID copied to clipboard!
+                    </span>
+                  )}
+                </div>
+
+                {appSettings.qrCodeUrl && (
+                  <div className="shrink-0 text-center">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Scan to Pay</span>
+                    <div className="bg-white p-2 rounded-xl shadow-lg inline-block border-2 border-indigo-500/30">
+                      <img 
+                        src={appSettings.qrCodeUrl} 
+                        alt="UPI Payment QR Code" 
+                        className="w-28 h-28 object-contain rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-indigo-950/20 border border-indigo-500/20 p-3 rounded-xl text-[11px] text-slate-400 leading-relaxed font-medium">
+                <p>1. Open your payment app (Google Pay, PhonePe, Paytm, BHIM).</p>
+                <p>2. Scan the QR code above or pay to UPI ID <strong className="text-indigo-300 font-mono">{appSettings.upiId || "Admin UPI"}</strong>.</p>
+                <p>3. Enter deposit amount, transfer cash, then fill in your details below.</p>
+              </div>
+            </div>
+
+            {/* Manual Deposit Submission Form */}
+            <form onSubmit={handleDepositSubmit} className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
                   Deposit Amount (₹) *
@@ -565,13 +615,39 @@ export default function WalletHub({ user, appSettings }: WalletHubProps) {
                     disabled={isSubmittingDeposit}
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-4 pr-12 py-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono font-bold"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-4 pr-12 py-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono font-bold"
                   />
-                  <span className="absolute right-3 top-3 text-[10px] text-slate-500 font-black uppercase tracking-wider">INR</span>
+                  <span className="absolute right-3 top-3.5 text-[10px] text-slate-500 font-black uppercase tracking-wider">INR</span>
                 </div>
-                <span className="text-[10px] text-slate-500 mt-1.5 block font-medium">
-                  Minimum deposit of ₹50 required.
-                </span>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  Payment Sender Name (Your name in UPI / Payment App) *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Rahul Sharma (GPay)"
+                  required
+                  disabled={isSubmittingDeposit}
+                  value={paymentSenderName}
+                  onChange={(e) => setPaymentSenderName(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  UTR / Transaction Ref Number (Optional / Recommended)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 4235XXXXXXXX or Order ID"
+                  disabled={isSubmittingDeposit}
+                  value={depositRef}
+                  onChange={(e) => setDepositRef(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono font-bold"
+                />
               </div>
 
               {depositError && (
@@ -584,26 +660,48 @@ export default function WalletHub({ user, appSettings }: WalletHubProps) {
               {depositSuccess && (
                 <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs flex items-center space-x-2 font-bold animate-pulse">
                   <CheckCircle className="h-4.5 w-4.5 shrink-0" />
-                  <span>Payment verified! ₹{parseFloat(depositAmount) || 0} credited automatically. Redirecting...</span>
+                  <span>Deposit request submitted! Admin will verify your payment and credit wallet balance shortly.</span>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmittingDeposit}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-3 rounded-xl transition shadow-lg shadow-indigo-500/15 flex items-center justify-center space-x-2 cursor-pointer text-xs uppercase tracking-wider disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white font-black py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/15 flex items-center justify-center space-x-2 cursor-pointer text-xs uppercase tracking-wider disabled:opacity-50"
               >
                 {isSubmittingDeposit ? (
                   <>
                     <Clock className="h-4 w-4 animate-spin" />
-                    <span>Processing Gateway...</span>
+                    <span>Submitting Request...</span>
                   </>
                 ) : (
-                  <span>Deposit via Razorpay</span>
+                  <span>Submit Deposit Request</span>
                 )}
               </button>
             </form>
           </div>
+
+          {/*
+          =====================================================
+          RAZORPAY AUTOMATED PAYMENT GATEWAY (COMMENTED OUT)
+          =====================================================
+          To reactivate Razorpay automated checkout:
+          1. Uncomment this form component block.
+          2. Change submit handler to handleStartDepositPayment.
+          
+          <form onSubmit={handleStartDepositPayment} className="space-y-5">
+            <input
+              type="number"
+              placeholder="Minimum ₹50"
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+            />
+            <button type="submit">
+              Deposit via Razorpay
+            </button>
+          </form>
+          =====================================================
+          */}
         </div>
       )}
 
