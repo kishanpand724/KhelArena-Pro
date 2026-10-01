@@ -228,10 +228,19 @@ export default function App() {
   // Handle standard user Google login
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    setAdminAuthError("");
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Authentication failed:", err);
+      if (err?.code === "auth/unauthorized-domain") {
+        const domain = window.location.hostname;
+        const msg = `Domain Unauthorized (${domain}): Please add "${domain}" under Firebase Console -> Authentication -> Settings -> Authorized domains.`;
+        setAdminAuthError(msg);
+        alert(msg);
+      } else if (err?.message) {
+        setAdminAuthError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -351,9 +360,14 @@ export default function App() {
                       }
                     }
                   }
-                } catch (err) {
+                } catch (err: any) {
                   console.error("Popup admin login error:", err);
-                  setAdminAuthError("Popup authentication failed or was closed.");
+                  if (err?.code === "auth/unauthorized-domain") {
+                    const domain = window.location.hostname;
+                    setAdminAuthError(`Domain Unauthorized (${domain}): Please add "${domain}" under Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+                  } else {
+                    setAdminAuthError(err?.message || "Popup authentication failed or was closed.");
+                  }
                 } finally {
                   setIsLoading(false);
                 }

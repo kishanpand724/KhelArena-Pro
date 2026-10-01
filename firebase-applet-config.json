@@ -6,5 +6,7 @@
   "firestoreDatabaseId": "ai-studio-tournamentmanage-aafc5515-033b-47a5-8544-c4eafa421bcf",
   "storageBucket": "promising-nexus-v6d0h.firebasestorage.app",
   "messagingSenderId": "485339187784",
-  "measurementId": ""
+  "measurementId": "",
+  "oAuthClientId": "485339187784-9k7hm5431bnijb8c1gdml8dj9m2erpb2.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

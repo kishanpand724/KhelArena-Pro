@@ -103,9 +103,14 @@ export default function AdminApp() {
     setAuthError("");
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Admin Authentication failed:", err);
-      setAuthError("Authentication failed during Google Popup Login.");
+      if (err?.code === "auth/unauthorized-domain") {
+        const domain = window.location.hostname;
+        setAuthError(`Domain Unauthorized (${domain}): Please add "${domain}" under Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+      } else {
+        setAuthError(err?.message || "Authentication failed during Google Popup Login.");
+      }
     } finally {
       setIsLoading(false);
     }
